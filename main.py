@@ -144,7 +144,7 @@ async def start_trace(request: StartTraceRequest) -> StartTraceResponse:
 
     if key in traces:
         logger.warning(
-            f"Trace with key '{key}' already exists and will be overwritten."
+            f'Trace with key "{key}" already exists and will be overwritten.'
         )
 
     # NOTE: We overwrite a trace if it already exists
