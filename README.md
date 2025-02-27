@@ -69,3 +69,7 @@ POST http://localhost:8000/api/tracing/end
 ```http
 GET http://localhost:8000/api/traces/my-feature
 ```
+
+```http
+DELETE http://localhost:8000/api/traces/my-feature
+```
