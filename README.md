@@ -26,7 +26,7 @@
 POST http://localhost:8000/api/tracing/start
 
 {
-   "tag": "solana-account-creation"
+   "tag": "my-feature"
 }
 ```
 
@@ -34,8 +34,8 @@ POST http://localhost:8000/api/tracing/start
 POST http://localhost:8000/api/tracing/step
 
 {
-   "tag": "solana-account-creation",
-   "step_name": "click-on-create-account"
+   "tag": "my-feature",
+   "step_name": "step-1"
 }
 ```
 
@@ -43,8 +43,8 @@ POST http://localhost:8000/api/tracing/step
 POST http://localhost:8000/api/tracing/step
 
 {
-   "tag": "solana-account-creation",
-   "step_name": "send-request-to-snap"
+   "tag": "my-feature",
+   "step_name": "step-2"
 }
 ```
 
@@ -52,26 +52,8 @@ POST http://localhost:8000/api/tracing/step
 POST http://localhost:8000/api/tracing/step
 
 {
-   "tag": "solana-account-creation",
-   "step_name": "notify-client"
-}
-```
-
-```http
-POST http://localhost:8000/api/tracing/step
-
-{
-   "tag": "solana-account-creation",
-   "step_name": "persist-client-state"
-}
-```
-
-```http
-POST http://localhost:8000/api/tracing/step
-
-{
-   "tag": "solana-account-creation",
-   "step_name": "persist-snap-state",
+   "tag": "my-feature",
+   "step_name": "step-3",
    "end": true
 }
 ```
@@ -80,10 +62,10 @@ POST http://localhost:8000/api/tracing/step
 POST http://localhost:8000/api/tracing/end
 
 {
-   "tag": "solana-account-creation"
+   "tag": "my-feature"
 }
 ```
 
 ```http
-GET http://localhost:8000/api/traces/solana-account-creation
+GET http://localhost:8000/api/traces/my-feature
 ```
