@@ -265,3 +265,11 @@ async def get_trace(tag: str) -> list[GetTraceResponse]:
         )
         for result in results.get(tag, [])
     ]
+
+
+@app.delete("/api/traces/{tag}")
+async def delete_trace(tag: str) -> None:
+    """
+    Delete all traces for a given tag.
+    """
+    results.pop(tag, None)
