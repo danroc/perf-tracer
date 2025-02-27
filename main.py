@@ -7,6 +7,11 @@ from pydantic import BaseModel
 app = FastAPI()
 
 
+# ----------------------------------------------------------------------
+# API models
+# ----------------------------------------------------------------------
+
+
 class StartTraceRequest(BaseModel):
     tag: str
     trace_id: str | None = None
@@ -64,6 +69,11 @@ class GetTraceResponse(BaseModel):
     steps: list[EndTraceStep]
 
 
+# ----------------------------------------------------------------------
+# Internal types
+# ----------------------------------------------------------------------
+
+
 @dataclass
 class TraceStep:
     step_name: str
@@ -99,11 +109,21 @@ class TraceResult:
     steps: list[TraceStep]
 
 
+# ----------------------------------------------------------------------
+# Service state
+# ----------------------------------------------------------------------
+
+
 # tag:trace_id -> TraceContext
 traces: dict[str, TraceContext] = {}
 
 # tag -> TraceResult
 results: dict[str, list[TraceResult]] = {}
+
+
+# ----------------------------------------------------------------------
+# API endpoints
+# ----------------------------------------------------------------------
 
 
 def build_trace_key(tag: str, trace_id: str | None = None) -> str:
@@ -134,7 +154,9 @@ async def start_trace(request: StartTraceRequest) -> StartTraceResponse:
 
 
 @app.post("/api/tracing/step")
-async def add_step(request: AddStepRequest) -> AddStepResponse | EndTraceResponse:
+async def add_step(
+    request: AddStepRequest,
+) -> AddStepResponse | EndTraceResponse:
     """
     Add a step to an existing trace.
     """
@@ -170,7 +192,9 @@ async def add_step(request: AddStepRequest) -> AddStepResponse | EndTraceRespons
 
 
 @app.post("/api/tracing/end")
-async def end_trace(request: EndTraceRequest, timestamp: datetime | None = None) -> EndTraceResponse:
+async def end_trace(
+    request: EndTraceRequest, timestamp: datetime | None = None
+) -> EndTraceResponse:
     """
     End an existing trace.
     """
