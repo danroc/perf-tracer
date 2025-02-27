@@ -1,8 +1,11 @@
+import logging
 from dataclasses import dataclass
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel
+
+logger = logging.getLogger("uvicorn")
 
 app = FastAPI()
 
@@ -139,8 +142,9 @@ async def start_trace(request: StartTraceRequest) -> StartTraceResponse:
     key = build_trace_key(request.tag, request.trace_id)
 
     if key in traces:
-        # TODO: Log a warning here
-        pass
+        logger.warning(
+            f"Trace with key '{key}' already exists and will be overwritten."
+        )
 
     # NOTE: We overwrite a trace if it already exists
     traces[key] = TraceContext(start_time=now, steps=[])
