@@ -1,5 +1,5 @@
 [project]
-name = "tracer"
+name = "perf-tracer"
 version = "0.1.0"
 description = "A simple performance tracing tool"
 readme = "README.md"
