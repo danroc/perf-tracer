@@ -1,6 +1,4 @@
-# Tracer
-
-## Development
+# perf-tracer
 
 1. Clone this repo
 
@@ -17,5 +15,7 @@
 4. Start the server
 
    ```bash
-   fastapi dev main.py
+   fastapi run main.py
+   # Or the following during development:
+   # fastapi dev main.py
    ```
