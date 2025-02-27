@@ -58,8 +58,9 @@ class EndTraceResponse(BaseModel):
     message: str
     tag: str
     trace_id: str | None
-    duration: float
+    start_time: str
     end_time: str
+    duration: float
     steps: list[EndTraceStep]
 
 
@@ -229,8 +230,9 @@ async def end_trace(
         message="Trace ended",
         tag=request.tag,
         trace_id=request.trace_id,
-        duration=duration,
+        start_time=trace.start_time.isoformat(),
         end_time=now.isoformat(),
+        duration=duration,
         steps=[
             EndTraceStep(
                 step_name=step.step_name,
