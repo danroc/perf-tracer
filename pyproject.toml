@@ -1,0 +1,50 @@
+[project]
+name = "tracer"
+version = "0.1.0"
+description = "A simple performance tracing tool"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.115.8",
+]
+
+[tool.ruff]
+preview = true
+
+[tool.ruff.lint]
+extend-select = [
+  "I",   # isort
+  "UP",  # pyupgrade
+  "S",   # flake8-bandit
+  "B",   # flake8-bugbear
+  "C4",  # flake8-comprehensions
+  "ISC", # flake8-implicit-str-concat
+  "FIX", # flake8-fixme
+  "FA",  # flake8-future-annotations
+  "SIM", # flake8-simplify
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+  "S101", # asserts
+  "D100", # undocumented-public-module
+  "D103", # undocumented-public-function
+  "D104", # undocumented-public-package
+]
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_any_unimported = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+show_column_numbers = true
+show_error_codes = true
+show_error_context = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_ignores = true
+warn_unused_configs = true
