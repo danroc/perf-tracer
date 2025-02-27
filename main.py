@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Callable
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -54,6 +55,15 @@ class EndTraceResponse(BaseModel):
     steps: list[EndTraceStep]
 
 
+class GetTraceResponse(BaseModel):
+    tag: str
+    trace_id: str | None
+    start_time: str
+    end_time: str
+    duration: float
+    steps: list[EndTraceStep]
+
+
 @dataclass
 class TraceStep:
     step_name: str
@@ -62,7 +72,7 @@ class TraceStep:
 
 
 @dataclass
-class Trace:
+class TraceContext:
     start_time: datetime
     steps: list[TraceStep]
 
@@ -79,7 +89,21 @@ class Trace:
         return step
 
 
-traces: dict[str, Trace] = {}
+@dataclass
+class TraceResult:
+    tag: str
+    trace_id: str | None
+    start_time: datetime
+    end_time: datetime
+    duration: float
+    steps: list[TraceStep]
+
+
+# tag:trace_id -> TraceContext
+traces: dict[str, TraceContext] = {}
+
+# tag -> TraceResult
+results: dict[str, list[TraceResult]] = {}
 
 
 def build_trace_key(tag: str, trace_id: str | None = None) -> str:
@@ -95,12 +119,11 @@ async def start_trace(request: StartTraceRequest) -> StartTraceResponse:
     key = build_trace_key(request.tag, request.trace_id)
 
     if key in traces:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Trace with this tag and trace_id already exists.",
-        )
+        # TODO: Log a warning here
+        pass
 
-    traces[key] = Trace(start_time=now, steps=[])
+    # NOTE: We overwrite a trace if it already exists
+    traces[key] = TraceContext(start_time=now, steps=[])
 
     return StartTraceResponse(
         message="Trace started",
@@ -154,6 +177,17 @@ async def end_trace(request: EndTraceRequest) -> EndTraceResponse:
 
     duration = (now - trace.start_time).total_seconds()
 
+    results.setdefault(request.tag, []).append(
+        TraceResult(
+            tag=request.tag,
+            trace_id=request.trace_id,
+            start_time=trace.start_time,
+            end_time=now,
+            duration=duration,
+            steps=trace.steps,
+        )
+    )
+
     return EndTraceResponse(
         message="Trace ended",
         tag=request.tag,
@@ -169,3 +203,28 @@ async def end_trace(request: EndTraceRequest) -> EndTraceResponse:
             for step in trace.steps
         ],
     )
+
+
+@app.get("/api/traces/{tag}")
+async def get_trace(tag: str) -> list[GetTraceResponse]:
+    """
+    Get all traces for a given tag.
+    """
+    return [
+        GetTraceResponse(
+            tag=result.tag,
+            trace_id=result.trace_id,
+            start_time=result.start_time.isoformat(),
+            end_time=result.end_time.isoformat(),
+            duration=result.duration,
+            steps=[
+                EndTraceStep(
+                    step_name=step.step_name,
+                    timestamp=step.timestamp.isoformat(),
+                    duration=step.duration,
+                )
+                for step in result.steps
+            ],
+        )
+        for result in results.get(tag, [])
+    ]
