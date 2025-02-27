@@ -23,6 +23,7 @@ class AddStepRequest(BaseModel):
     tag: str
     trace_id: str | None = None
     step_name: str
+    end: bool = False
 
 
 class AddStepResponse(BaseModel):
@@ -133,7 +134,7 @@ async def start_trace(request: StartTraceRequest) -> StartTraceResponse:
 
 
 @app.post("/api/tracing/step")
-async def add_step(request: AddStepRequest) -> AddStepResponse:
+async def add_step(request: AddStepRequest) -> AddStepResponse | EndTraceResponse:
     """
     Add a step to an existing trace.
     """
@@ -149,6 +150,15 @@ async def add_step(request: AddStepRequest) -> AddStepResponse:
 
     step = trace.add_step(request.step_name, now)
 
+    if request.end:
+        return await end_trace(
+            EndTraceRequest(
+                tag=request.tag,
+                trace_id=request.trace_id,
+            ),
+            timestamp=now,
+        )
+
     return AddStepResponse(
         message="Step added",
         tag=request.tag,
@@ -160,11 +170,11 @@ async def add_step(request: AddStepRequest) -> AddStepResponse:
 
 
 @app.post("/api/tracing/end")
-async def end_trace(request: EndTraceRequest) -> EndTraceResponse:
+async def end_trace(request: EndTraceRequest, timestamp: datetime | None = None) -> EndTraceResponse:
     """
     End an existing trace.
     """
-    now = datetime.now()
+    now = timestamp or datetime.now()
     key = build_trace_key(request.tag, request.trace_id)
     trace = traces.pop(key, None)
 

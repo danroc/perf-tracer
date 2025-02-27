@@ -71,7 +71,8 @@ POST http://localhost:8000/api/tracing/step
 
 {
    "tag": "solana-account-creation",
-   "step_name": "persist-snap-state"
+   "step_name": "persist-snap-state",
+   "end": true
 }
 ```
 
