@@ -269,7 +269,7 @@ async def get_trace(tag: str) -> list[GetTraceResponse]:
     ]
 
 
-@app.delete("/api/traces/{tag}")
+@app.delete("/api/traces/{tag}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_trace(tag: str) -> None:
     """
     Delete all traces for a given tag.
