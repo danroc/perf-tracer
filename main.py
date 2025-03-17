@@ -16,19 +16,19 @@ app = FastAPI()
 
 
 class StartTraceRequest(BaseModel):
-    tag: str
+    trace_tag: str
     trace_id: str | None = None
 
 
 class StartTraceResponse(BaseModel):
     message: str
-    tag: str
+    trace_tag: str
     trace_id: str | None
     start_time: str
 
 
 class AddStepRequest(BaseModel):
-    tag: str
+    trace_tag: str
     trace_id: str | None = None
     step_name: str
     end: bool = False
@@ -36,40 +36,40 @@ class AddStepRequest(BaseModel):
 
 class AddStepResponse(BaseModel):
     message: str
-    tag: str
+    trace_tag: str
     trace_id: str | None
     step_name: str
     timestamp: str
-    duration: float
+    duration_seconds: float
 
 
 class EndTraceRequest(BaseModel):
-    tag: str
+    trace_tag: str
     trace_id: str | None = None
 
 
 class EndTraceStep(BaseModel):
     step_name: str
     timestamp: str
-    duration: float
+    duration_seconds: float
 
 
 class EndTraceResponse(BaseModel):
     message: str
-    tag: str
+    trace_tag: str
     trace_id: str | None
     start_time: str
     end_time: str
-    duration: float
+    duration_seconds: float
     steps: list[EndTraceStep]
 
 
 class GetTraceResponse(BaseModel):
-    tag: str
+    trace_tag: str
     trace_id: str | None
     start_time: str
     end_time: str
-    duration: float
+    duration_seconds: float
     steps: list[EndTraceStep]
 
 
@@ -82,7 +82,7 @@ class GetTraceResponse(BaseModel):
 class TraceStep:
     step_name: str
     timestamp: datetime
-    duration: float
+    duration_seconds: float
 
 
 @dataclass
@@ -97,7 +97,7 @@ class TraceContext:
         step = TraceStep(
             step_name=step_name,
             timestamp=timestamp,
-            duration=(timestamp - self._previous_timestamp()).total_seconds(),
+            duration_seconds=(timestamp - self._previous_timestamp()).total_seconds(),
         )
         self.steps.append(step)
         return step
@@ -105,11 +105,11 @@ class TraceContext:
 
 @dataclass
 class TraceResult:
-    tag: str
+    trace_tag: str
     trace_id: str | None
     start_time: datetime
     end_time: datetime
-    duration: float
+    duration_seconds: float
     steps: list[TraceStep]
 
 
@@ -130,8 +130,8 @@ results: dict[str, list[TraceResult]] = {}
 # ----------------------------------------------------------------------
 
 
-def build_trace_key(tag: str, trace_id: str | None = None) -> str:
-    return f"{tag}:{trace_id or 'default'}"
+def build_trace_key(trace_tag: str, trace_id: str | None = None) -> str:
+    return f"{trace_tag}:{trace_id or 'default'}"
 
 
 @app.post("/api/tracing/start")
@@ -140,7 +140,7 @@ async def start_trace(request: StartTraceRequest) -> StartTraceResponse:
     Start a new trace.
     """
     now = datetime.now()
-    key = build_trace_key(request.tag, request.trace_id)
+    key = build_trace_key(request.trace_tag, request.trace_id)
 
     if key in traces:
         logger.warning(
@@ -152,7 +152,7 @@ async def start_trace(request: StartTraceRequest) -> StartTraceResponse:
 
     return StartTraceResponse(
         message="Trace started",
-        tag=request.tag,
+        trace_tag=request.trace_tag,
         trace_id=request.trace_id,
         start_time=now.isoformat(),
     )
@@ -166,7 +166,7 @@ async def add_step(
     Add a step to an existing trace.
     """
     now = datetime.now()
-    key = build_trace_key(request.tag, request.trace_id)
+    key = build_trace_key(request.trace_tag, request.trace_id)
     trace = traces.get(key)
 
     if trace is None:
@@ -180,7 +180,7 @@ async def add_step(
     if request.end:
         return await end_trace(
             EndTraceRequest(
-                tag=request.tag,
+                trace_tag=request.trace_tag,
                 trace_id=request.trace_id,
             ),
             timestamp=now,
@@ -188,11 +188,11 @@ async def add_step(
 
     return AddStepResponse(
         message="Step added",
-        tag=request.tag,
+        trace_tag=request.trace_tag,
         trace_id=request.trace_id,
         step_name=request.step_name,
         timestamp=step.timestamp.isoformat(),
-        duration=step.duration,
+        duration_seconds=step.duration_seconds,
     )
 
 
@@ -204,7 +204,7 @@ async def end_trace(
     End an existing trace.
     """
     now = timestamp or datetime.now()
-    key = build_trace_key(request.tag, request.trace_id)
+    key = build_trace_key(request.trace_tag, request.trace_id)
     trace = traces.pop(key, None)
 
     if trace is None:
@@ -215,63 +215,63 @@ async def end_trace(
 
     duration = (now - trace.start_time).total_seconds()
 
-    results.setdefault(request.tag, []).append(
+    results.setdefault(request.trace_tag, []).append(
         TraceResult(
-            tag=request.tag,
+            trace_tag=request.trace_tag,
             trace_id=request.trace_id,
             start_time=trace.start_time,
             end_time=now,
-            duration=duration,
+            duration_seconds=duration,
             steps=trace.steps,
         )
     )
 
     return EndTraceResponse(
         message="Trace ended",
-        tag=request.tag,
+        trace_tag=request.trace_tag,
         trace_id=request.trace_id,
         start_time=trace.start_time.isoformat(),
         end_time=now.isoformat(),
-        duration=duration,
+        duration_seconds=duration,
         steps=[
             EndTraceStep(
                 step_name=step.step_name,
                 timestamp=step.timestamp.isoformat(),
-                duration=step.duration,
+                duration_seconds=step.duration_seconds,
             )
             for step in trace.steps
         ],
     )
 
 
-@app.get("/api/traces/{tag}")
-async def get_trace(tag: str) -> list[GetTraceResponse]:
+@app.get("/api/traces/{trace_tag}")
+async def get_trace(trace_tag: str) -> list[GetTraceResponse]:
     """
     Get all traces for a given tag.
     """
     return [
         GetTraceResponse(
-            tag=result.tag,
+            trace_tag=result.trace_tag,
             trace_id=result.trace_id,
             start_time=result.start_time.isoformat(),
             end_time=result.end_time.isoformat(),
-            duration=result.duration,
+            duration_seconds=result.duration_seconds,
             steps=[
                 EndTraceStep(
                     step_name=step.step_name,
                     timestamp=step.timestamp.isoformat(),
-                    duration=step.duration,
+                    duration_seconds=step.duration_seconds,
                 )
                 for step in result.steps
             ],
         )
-        for result in results.get(tag, [])
+        for result in results.get(trace_tag, [])
     ]
 
 
-@app.delete("/api/traces/{tag}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_trace(tag: str) -> None:
+@app.delete("/api/traces/{trace_tag}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_trace(trace_tag: str) -> None:
     """
     Delete all traces for a given tag.
     """
-    results.pop(tag, None)
+    results.pop(trace_tag, None)
