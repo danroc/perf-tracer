@@ -26,7 +26,7 @@
 POST http://localhost:8000/api/tracing/start
 
 {
-   "tag": "my-feature"
+   "trace_tag": "my-feature"
 }
 ```
 
@@ -34,7 +34,7 @@ POST http://localhost:8000/api/tracing/start
 POST http://localhost:8000/api/tracing/step
 
 {
-   "tag": "my-feature",
+   "trace_tag": "my-feature",
    "step_name": "step-1"
 }
 ```
@@ -43,7 +43,7 @@ POST http://localhost:8000/api/tracing/step
 POST http://localhost:8000/api/tracing/step
 
 {
-   "tag": "my-feature",
+   "trace_tag": "my-feature",
    "step_name": "step-2"
 }
 ```
@@ -52,7 +52,7 @@ POST http://localhost:8000/api/tracing/step
 POST http://localhost:8000/api/tracing/step
 
 {
-   "tag": "my-feature",
+   "trace_tag": "my-feature",
    "step_name": "step-3",
    "end": true
 }
@@ -62,7 +62,7 @@ POST http://localhost:8000/api/tracing/step
 POST http://localhost:8000/api/tracing/end
 
 {
-   "tag": "my-feature"
+   "trace_tag": "my-feature"
 }
 ```
 
