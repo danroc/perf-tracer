@@ -20,6 +20,9 @@
    # fastapi dev main.py
    ```
 
+   > After starting the server, the API documentation can be found at
+   > <http://localhost:8000/docs>
+
 ## Examples
 
 ```http
