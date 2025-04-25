@@ -3,11 +3,24 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 logger = logging.getLogger("uvicorn")
 
 app = FastAPI()
+
+# This is required to allow the API to be called from a web page.
+#
+# IMPORTANT: This middleware will allow requests from any origin, which
+# is not recommended for production deployments.
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],  # Allow all origins
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 
 # ----------------------------------------------------------------------
