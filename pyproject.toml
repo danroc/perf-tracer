@@ -49,3 +49,9 @@ warn_redundant_casts = true
 warn_return_any = true
 warn_unused_ignores = true
 warn_unused_configs = true
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18.2",
+    "ruff>=0.13.2",
+]
