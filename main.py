@@ -45,7 +45,7 @@ class AddStepRequest(BaseModel):
     trace_id: str | None = None
     step_name: str
     track_duration: bool = True
-    end: bool = False
+    end_trace: bool = False
 
 
 class AddStepResponse(BaseModel):
@@ -199,7 +199,7 @@ async def add_step(
 
     step = trace.add_step(request.step_name, now, request.track_duration)
 
-    if request.end:
+    if request.end_trace:
         return await end_trace(
             EndTraceRequest(
                 trace_tag=request.trace_tag,
