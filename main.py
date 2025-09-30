@@ -53,7 +53,7 @@ class AddStepResponse(BaseModel):
     trace_tag: str
     trace_id: str | None
     step_name: str
-    timestamp: str
+    step_time: str
     track_duration: bool
     duration_seconds: float
 
@@ -65,7 +65,7 @@ class EndTraceRequest(BaseModel):
 
 class EndTraceStep(BaseModel):
     step_name: str
-    timestamp: str
+    step_time: str
     track_duration: bool
     duration_seconds: float
 
@@ -97,7 +97,7 @@ class GetTraceResponse(BaseModel):
 @dataclass
 class TraceStep:
     step_name: str
-    timestamp: datetime
+    step_time: datetime
     track_duration: bool
     duration_seconds: float
 
@@ -108,17 +108,17 @@ class TraceContext:
     steps: list[TraceStep]
 
     def _previous_timestamp(self) -> datetime:
-        return self.steps[-1].timestamp if self.steps else self.start_time
+        return self.steps[-1].step_time if self.steps else self.start_time
 
     def add_step(
-        self, step_name: str, timestamp: datetime, track_duration: bool
+        self, step_name: str, step_time: datetime, track_duration: bool
     ) -> TraceStep:
         step = TraceStep(
             step_name=step_name,
-            timestamp=timestamp,
+            step_time=step_time,
             track_duration=track_duration,
             duration_seconds=(
-                timestamp - self._previous_timestamp()
+                step_time - self._previous_timestamp()
             ).total_seconds(),
         )
         self.steps.append(step)
@@ -213,7 +213,7 @@ async def add_step(
         trace_tag=request.trace_tag,
         trace_id=request.trace_id,
         step_name=request.step_name,
-        timestamp=step.timestamp.isoformat(),
+        step_time=step.step_time.isoformat(),
         track_duration=request.track_duration,
         duration_seconds=step.duration_seconds,
     )
@@ -262,7 +262,7 @@ async def end_trace(
         steps=[
             EndTraceStep(
                 step_name=step.step_name,
-                timestamp=step.timestamp.isoformat(),
+                step_time=step.step_time.isoformat(),
                 track_duration=step.track_duration,
                 duration_seconds=step.duration_seconds,
             )
@@ -286,7 +286,7 @@ async def get_trace(trace_tag: str) -> list[GetTraceResponse]:
             steps=[
                 EndTraceStep(
                     step_name=step.step_name,
-                    timestamp=step.timestamp.isoformat(),
+                    step_time=step.step_time.isoformat(),
                     track_duration=step.track_duration,
                     duration_seconds=step.duration_seconds,
                 )
